@@ -14,14 +14,14 @@ fn main() -> Result<()> {
     let statements = SqlParser::parse_sql(&PostgreSqlDialect {}, &input)?;
     let mut definitions = Vec::new();
     for statement in statements {
-        if let Statement::CreateTable { name, columns, .. } = statement {
-            definitions.push(model::TableDefinition::new(
-                name.to_string(),
-                columns
-                    .into_iter()
-                    .map(model::ColumnDefinition::from_ast)
-                    .collect(),
-            ));
+        if let Statement::CreateTable {
+            name,
+            columns,
+            constraints,
+            ..
+        } = statement
+        {
+            definitions.push(model::TableDefinition::from_ast(name, columns, constraints));
         }
     }
     schema::generate_graphviz(&mut std::io::stdout(), definitions)?;

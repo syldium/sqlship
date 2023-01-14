@@ -1,4 +1,4 @@
-use crate::model::TableDefinition;
+use crate::model::{TableDefinition, Uniqueness};
 use anyhow::Result;
 use std::io::Write;
 
@@ -14,7 +14,19 @@ pub fn generate_graphviz(writer: &mut dyn Write, tables: Vec<TableDefinition>) -
             table.name.to_uppercase()
         )?;
         for column in &table.columns {
-            writeln!(writer, "  <tr><td>{}</td></tr>", column.name)?;
+            let mut prefix = "";
+            if column.references.is_some() {
+                prefix = "#";
+            }
+            if let Some(Uniqueness::PrimaryKey) = column.uniqueness {
+                writeln!(
+                    writer,
+                    "  <tr><td><u>{}{}</u></td></tr>",
+                    prefix, column.name
+                )?;
+            } else {
+                writeln!(writer, "  <tr><td>{}{}</td></tr>", prefix, column.name)?;
+            }
         }
         writeln!(writer, "</table>>];")?;
     }
