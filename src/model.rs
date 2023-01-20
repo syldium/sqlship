@@ -1,4 +1,5 @@
 use sqlparser::ast::{ColumnDef, ColumnOption, ObjectName, TableConstraint};
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct TableDefinition {
@@ -56,6 +57,25 @@ impl TableDefinition {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
+pub enum Cardinality {
+    ZeroToOne,
+    OneToOne,
+    ZeroToMany,
+    OneToMany,
+}
+
+impl fmt::Display for Cardinality {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Cardinality::ZeroToOne => f.write_str("01"),
+            Cardinality::OneToOne => f.write_str("11"),
+            Cardinality::ZeroToMany => f.write_str("0N"),
+            Cardinality::OneToMany => f.write_str("1N"),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Uniqueness {
     Unique,
     PrimaryKey,
@@ -98,7 +118,15 @@ impl ColumnDefinition {
         col
     }
 
-    pub fn _is_non_null(&self) -> bool {
+    pub fn is_non_null(&self) -> bool {
         self.non_null || self.uniqueness == Some(Uniqueness::PrimaryKey)
+    }
+
+    pub fn cardinality(&self) -> Cardinality {
+        if self.is_non_null() {
+            Cardinality::OneToOne
+        } else {
+            Cardinality::ZeroToOne
+        }
     }
 }
