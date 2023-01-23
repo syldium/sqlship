@@ -90,3 +90,61 @@ pub fn generate_mocodo(writer: &mut dyn Write, model: &EntityRelationships) -> R
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::Cursor;
+    use crate::er::{Entity, EntityProperty, Relationship, RelationshipReference};
+    use crate::model::Cardinality;
+    use super::*;
+
+    #[test]
+    fn test_generate_mocodo() {
+        let mut buffer = Cursor::new(vec![]);
+        let model = EntityRelationships {
+            entities: vec![
+                Entity {
+                    name: "Entity1",
+                    properties: vec![
+                        EntityProperty { name: "primary1", primary: true },
+                        EntityProperty { name: "primary2", primary: true },
+                        EntityProperty { name: "attribute1", primary: false },
+                        EntityProperty { name: "attribute2", primary: false },
+                    ],
+                },
+                Entity {
+                    name: "Entity2",
+                    properties: vec![
+                        EntityProperty { name: "primary1", primary: true },
+                        EntityProperty { name: "attribute1", primary: false },
+                        EntityProperty { name: "attribute2", primary: false },
+                    ],
+                },
+            ],
+            relations: vec![
+                Relationship {
+                    name: None,
+                    references: vec![
+                        RelationshipReference {
+                            cardinality: Cardinality::OneToMany,
+                            to: "Entity1",
+                        },
+                        RelationshipReference {
+                            cardinality: Cardinality::OneToOne,
+                            to: "Entity2",
+                        },
+                    ],
+                    properties: vec!["attribute2", "attribute3"],
+                },
+            ],
+        };
+
+        assert!(generate_mocodo(&mut buffer, &model).is_ok());
+        assert_eq!(
+            String::from_utf8(buffer.into_inner()).unwrap(),
+            "ENTITY1: primary1, _primary2, attribute1, attribute2
+ENTITY2: primary1, attribute1, attribute2
+DF1, 1N ENTITY1, 11 ENTITY2: attribute2, attribute3\n"
+        );
+    }
+}
