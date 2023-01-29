@@ -67,7 +67,7 @@ pub fn generate_mocodo(writer: &mut dyn Write, model: &EntityRelationships) -> R
     for association in &model.relations {
         if association.name.is_none() {
             df_counter += 1;
-            write!(writer, "DF{}", df_counter)?;
+            write!(writer, "DF{df_counter}")?;
         } else {
             write!(writer, "{}", association.name.as_ref().unwrap())?;
         }
@@ -84,7 +84,7 @@ pub fn generate_mocodo(writer: &mut dyn Write, model: &EntityRelationships) -> R
             if i != 0 {
                 write!(writer, ",")?;
             }
-            write!(writer, " {}", field)?;
+            write!(writer, " {field}")?;
         }
         writeln!(writer)?;
     }
@@ -93,10 +93,10 @@ pub fn generate_mocodo(writer: &mut dyn Write, model: &EntityRelationships) -> R
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
+    use super::*;
     use crate::er::{Entity, EntityProperty, Relationship, RelationshipReference};
     use crate::model::Cardinality;
-    use super::*;
+    use std::io::Cursor;
 
     #[test]
     fn test_generate_mocodo() {
@@ -106,37 +106,56 @@ mod tests {
                 Entity {
                     name: "Entity1",
                     properties: vec![
-                        EntityProperty { name: "primary1", primary: true },
-                        EntityProperty { name: "primary2", primary: true },
-                        EntityProperty { name: "attribute1", primary: false },
-                        EntityProperty { name: "attribute2", primary: false },
+                        EntityProperty {
+                            name: "primary1",
+                            primary: true,
+                        },
+                        EntityProperty {
+                            name: "primary2",
+                            primary: true,
+                        },
+                        EntityProperty {
+                            name: "attribute1",
+                            primary: false,
+                        },
+                        EntityProperty {
+                            name: "attribute2",
+                            primary: false,
+                        },
                     ],
                 },
                 Entity {
                     name: "Entity2",
                     properties: vec![
-                        EntityProperty { name: "primary1", primary: true },
-                        EntityProperty { name: "attribute1", primary: false },
-                        EntityProperty { name: "attribute2", primary: false },
+                        EntityProperty {
+                            name: "primary1",
+                            primary: true,
+                        },
+                        EntityProperty {
+                            name: "attribute1",
+                            primary: false,
+                        },
+                        EntityProperty {
+                            name: "attribute2",
+                            primary: false,
+                        },
                     ],
                 },
             ],
-            relations: vec![
-                Relationship {
-                    name: None,
-                    references: vec![
-                        RelationshipReference {
-                            cardinality: Cardinality::OneToMany,
-                            to: "Entity1",
-                        },
-                        RelationshipReference {
-                            cardinality: Cardinality::OneToOne,
-                            to: "Entity2",
-                        },
-                    ],
-                    properties: vec!["attribute2", "attribute3"],
-                },
-            ],
+            relations: vec![Relationship {
+                name: None,
+                references: vec![
+                    RelationshipReference {
+                        cardinality: Cardinality::OneToMany,
+                        to: "Entity1",
+                    },
+                    RelationshipReference {
+                        cardinality: Cardinality::OneToOne,
+                        to: "Entity2",
+                    },
+                ],
+                properties: vec!["attribute2", "attribute3"],
+            }],
         };
 
         assert!(generate_mocodo(&mut buffer, &model).is_ok());
