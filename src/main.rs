@@ -1,8 +1,9 @@
 use anyhow::Result;
 use clap::Parser;
 use sqlparser::ast::Statement;
-use sqlparser::dialect::PostgreSqlDialect;
+use sqlparser::dialect::Dialect;
 use sqlparser::parser::Parser as SqlParser;
+use std::ops::Deref;
 
 mod cli;
 mod er;
@@ -12,7 +13,8 @@ mod schema;
 fn main() -> Result<()> {
     let cli = cli::Cli::parse();
     let input = cli.read()?;
-    let statements = SqlParser::parse_sql(&PostgreSqlDialect {}, &input)?;
+    let dialect: Box<dyn Dialect> = cli.dialect.into();
+    let statements = SqlParser::parse_sql(dialect.deref(), &input)?;
     let mut definitions = Vec::new();
     for statement in statements {
         if let Statement::CreateTable {
