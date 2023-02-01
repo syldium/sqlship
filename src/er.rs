@@ -117,12 +117,7 @@ impl EntityRelationships<'_> {
                     relation.to == table.name && relation.cardinality == Cardinality::OneToOne
                 })
             };
-            let is_intermediate = relations
-                .iter()
-                .filter(|&relation| is_one_one(relation))
-                .count()
-                > 1;
-            if is_intermediate {
+            if Self::is_intermediate(&relations, table) {
                 let references = drain_filter_map(&mut relations, is_one_one, |reference| {
                     RelationshipReference {
                         to: related_name(&reference, &table.name),
@@ -161,5 +156,22 @@ impl EntityRelationships<'_> {
             entities,
             relations,
         }
+    }
+
+    fn is_intermediate(relations: &[Relationship], table: &TableDefinition) -> bool {
+        let mut count = 0usize;
+        for relation in relations {
+            for reference in &relation.references {
+                if reference.to != table.name {
+                    continue;
+                }
+                if reference.cardinality == Cardinality::OneToOne {
+                    count += 1;
+                } else {
+                    return false;
+                }
+            }
+        }
+        count > 1
     }
 }
