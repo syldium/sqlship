@@ -3,7 +3,7 @@ use crate::model::{TableDefinition, Uniqueness};
 use anyhow::Result;
 use std::io::Write;
 
-pub fn generate_graphviz(writer: &mut dyn Write, tables: &Vec<TableDefinition>) -> Result<()> {
+pub fn generate_graphviz(writer: &mut impl Write, tables: &Vec<TableDefinition>) -> Result<()> {
     writeln!(writer, "digraph {{")?;
     writeln!(writer, "    node [shape=plain]\n    rankdir=LR;")?;
     for table in tables {
@@ -42,7 +42,7 @@ pub fn generate_graphviz(writer: &mut dyn Write, tables: &Vec<TableDefinition>) 
     Ok(())
 }
 
-pub fn generate_mocodo(writer: &mut dyn Write, model: &EntityRelationships) -> Result<()> {
+pub fn generate_mocodo(writer: &mut impl Write, model: &EntityRelationships) -> Result<()> {
     // Write each entity on a single line
     // entity: primary1, _primary2, attribute1, attribute2
     for entity in &model.entities {
