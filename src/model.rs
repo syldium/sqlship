@@ -89,6 +89,12 @@ pub struct ColumnDefinition {
     non_null: bool,
 }
 
+impl From<ColumnDef> for ColumnDefinition {
+    fn from(column: ColumnDef) -> Self {
+        Self::from_ast(column)
+    }
+}
+
 impl ColumnDefinition {
     pub fn from_ast(column: ColumnDef) -> Self {
         let mut col = Self {
