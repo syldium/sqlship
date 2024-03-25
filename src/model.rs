@@ -111,7 +111,10 @@ impl ColumnDefinition {
                 ColumnOption::NotNull => {
                     col.non_null = true;
                 }
-                ColumnOption::Unique { is_primary } => {
+                ColumnOption::Unique {
+                    is_primary,
+                    characteristics: _,
+                } => {
                     col.uniqueness = Some(if *is_primary {
                         Uniqueness::PrimaryKey
                     } else {
