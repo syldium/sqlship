@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use sqlparser::ast::Statement;
+use sqlparser::ast::{CreateTable, Statement};
 use sqlparser::dialect::Dialect;
 use sqlparser::parser::Parser as SqlParser;
 use std::ops::Deref;
@@ -17,12 +17,12 @@ fn main() -> Result<()> {
     let statements = SqlParser::parse_sql(dialect.deref(), &input)?;
     let mut definitions = Vec::new();
     for statement in statements {
-        if let Statement::CreateTable {
+        if let Statement::CreateTable(CreateTable {
             name,
             columns,
             constraints,
             ..
-        } = statement
+        }) = statement
         {
             definitions.push(model::TableDefinition::from_ast(name, columns, constraints));
         }

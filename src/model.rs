@@ -31,15 +31,17 @@ impl TableDefinition {
                             column.references = Some(foreign_table.to_string());
                         });
                 }
-                TableConstraint::Unique {
-                    columns,
-                    is_primary,
+                TableConstraint::PrimaryKey {
+                    ref columns,
+                    ..
+                } | TableConstraint::Unique {
+                    ref columns,
                     ..
                 } => {
                     cols.iter_mut()
                         .filter(|column| columns.iter().any(|c| c.to_string() == column.name))
                         .for_each(|column| {
-                            column.uniqueness = Some(if is_primary {
+                            column.uniqueness = Some(if let TableConstraint::PrimaryKey { .. } = constraint {
                                 Uniqueness::PrimaryKey
                             } else {
                                 Uniqueness::Unique
